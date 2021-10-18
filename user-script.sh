@@ -35,7 +35,7 @@ systemctl start wetty.service
 ##---------------- k3sup -----------------------##
 curl -sLS https://get.k3sup.dev | sh
 mkdir /root/.kube
-k3sup install --local --local-path /root/.kube/config
+k3sup install --local --local-path /root/.kube/config --k3s-extra-args "--disable-cloud-controller --disable traefik --disable servicelb"
 
 
 ##---------------- env vars, bashrc and aliases -----------------------##
@@ -65,4 +65,3 @@ snap install helm --classic
 helm repo add jenkins https://charts.jenkins.io
 until kubectl get nodes; do sleep 1; done #Wait for the cluster to be ready
 helm upgrade --install jenkins jenkins/jenkins --version 3.7.1 -n jenkins --create-namespace --set controller.adminPassword="admin" --set controller.serviceType=NodePort --set controller.nodePort=30080
-
