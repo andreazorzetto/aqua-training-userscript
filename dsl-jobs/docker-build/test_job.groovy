@@ -1,4 +1,4 @@
-def PROJECT_NAME = "simple-webserver"
+def PROJECT_NAME = "test_job"
 def GIT_URL = "https://github.com/ecsdigital/devopsplayground-27-k8s-jenkins-pipeline.git"
 def GIT_BRANCH = "master"
 
