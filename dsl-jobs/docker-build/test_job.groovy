@@ -14,11 +14,18 @@ freeStyleJob(PROJECT_NAME) {
 
     steps {
         shell('''
-echo ciao
+#Build image
+echo "Building image."
         ''')
 
         shell('''
-echo ciao ciao
+#Push to registry
+echo "Push the image to registry without vulnerability scan. Love living on the edge"
+        ''')
+
+        shell('''
+#Run the workload
+echo "Run the workload. Security... is not my problem"
         ''')
     }
 }
