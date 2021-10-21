@@ -46,10 +46,10 @@ controller:
   # you should revert controller.adminUser to your preferred admin user:
   adminUser: "admin"
   adminPassword: "admin"
-#  admin:
-#    existingSecret: ""
-#    userKey: jenkins-admin-user
-#    passwordKey: jenkins-admin-password
+  admin:
+    existingSecret: ""
+    userKey: jenkins-admin-user
+    passwordKey: jenkins-admin-password
   # This values should not be changed unless you use your custom image of jenkins or any devired from. If you want to use
   # Cloudbees Jenkins Distribution docker, you should set jenkinsHome: "/var/cloudbees-jenkins-distribution"
   jenkinsHome: "/var/jenkins_home"
@@ -216,8 +216,7 @@ controller:
   # loadBalancerIP: 1.2.3.4
   # Optionally configure a JMX port
   # requires additional javaOpts, ie
-  javaOpts: >
-    -Dpermissive-script-security.enabled=true
+  # javaOpts: >
   #   -Dcom.sun.management.jmxremote.port=4000
   #   -Dcom.sun.management.jmxremote.authenticate=false
   #   -Dcom.sun.management.jmxremote.ssl=false
@@ -229,18 +228,17 @@ controller:
 
   # List of plugins to be install during Jenkins controller start
   installPlugins:
-    - kubernetes:1.30.5
+    - kubernetes:1.30.1
     - workflow-aggregator:2.6
     - git:4.9.0
     - configuration-as-code:1.53
     - job-dsl:1.77
-    - permissive-script-security:0.7
 
   # Set to false to download the minimum required version of all dependencies.
   installLatestPlugins: true
 
   # Set to true to download latest dependencies of any plugin that is requested to have the latest version.
-  installLatestSpecifiedPlugins: true
+  installLatestSpecifiedPlugins: false
 
   # List of plugins to install in addition to those listed in controller.installPlugins
   additionalPlugins: []
@@ -308,21 +306,51 @@ controller:
   JCasC:
     defaultConfig: true
     configScripts:
-      freestyle-jobs: |-
+      aqua-jobs: |-
         jobs:
           - script: >
-              job('dsl-job-provisioning') {
+              job('docker-build-freestyle') {
                 scm {
                   git {
                     remote {
                       url 'https://github.com/andreazorzetto/aqua-training-userscript.git'
-                      branch('andrea')
                     }
                   }
                 }
                 steps {
-                  jobDsl {
-                    targets 'dsl-jobs/**/*.groovy'
+                  shell('echo "Building image."')
+                  shell('echo "Push the image to registry without vulnerability scan. Love living on the edge"')
+                  shell('echo "Run the workload. Security... is not my problem"')
+                }
+              }
+          - script: >
+              pipelineJob('docker-build-pipeline') {
+                definition {
+                  cps {
+                    script("""\
+                      pipeline {
+                          agent any
+
+                          stages {
+                              stage('Docker Build') {
+                                  steps {
+                                      sh "git clone https://github.com/andreazorzetto/aqua-training-userscript.git"
+                                      sh "ls -la"
+                                      echo "Building image."
+                                  }
+                              }
+                              stage('Push to Registry'){
+                                  steps {
+                                      echo "Push the image to registry without vulnerability scan. Love living on the edge"
+                                  }
+                              }
+                              stage('Deploy Wokload'){
+                                  steps {
+                                      echo "Run the workload. Security... is not my problem"
+                                  }
+                              }
+                          }
+                      }""".stripIndent())
                   }
                 }
               }
@@ -356,7 +384,7 @@ controller:
       # jcasc changes will cause a reboot and will only be applied at the subsequent start-up.  Auto-reload uses the
       # http://<jenkins_url>/reload-configuration-as-code endpoint to reapply config when changes to the configScripts are detected.
       enabled: true
-      image: kiwigrid/k8s-sidecar:1.12.2
+      image: kiwigrid/k8s-sidecar:1.14.2
       imagePullPolicy: IfNotPresent
       resources: {}
         #   limits:
@@ -598,7 +626,7 @@ agent:
   maxRequestsPerHostStr: "32"
   namespace:
   image: "jenkins/inbound-agent"
-  tag: "4.6-1"
+  tag: "4.11-1"
   workingDir: "/home/jenkins/agent"
   nodeUsageMode: "NORMAL"
   customJenkinsLabels: []
@@ -688,12 +716,12 @@ agent:
   # Doesn't allocate pseudo TTY by default
   TTYEnabled: false
   # Max number of spawned agent
-  containerCap: 10
+  containerCap: 2
   # Pod name
   podName: "default"
   # Allows the Pod to remain active for reuse until the configured number of
   # minutes has passed since the last step was executed on it.
-  idleMinutes: 0
+  idleMinutes: 60
   # Raw yaml template for the Pod. For example this allows usage of toleration for agent pods.
   # https://github.com/jenkinsci/kubernetes-plugin#using-yaml-to-define-pod-templates
   # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
