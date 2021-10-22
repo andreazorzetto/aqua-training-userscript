@@ -35,7 +35,7 @@ systemctl start wetty.service
 ##---------------- k3sup -----------------------##
 curl -sLS https://get.k3sup.dev | sh
 mkdir /root/.kube
-k3sup install --local --local-path /root/.kube/config --k3s-extra-args "--disable-cloud-controller --disable traefik --disable servicelb"
+k3sup install --local --local-path /root/.kube/config --k3s-extra-args '--disable-cloud-controller --disable traefik --disable servicelb --docker'
 
 
 ##---------------- env vars, bashrc and aliases -----------------------##
