@@ -67,4 +67,5 @@ snap install helm --classic
 ##---------------- Jenkins -----------------------##
 helm repo add jenkins https://charts.jenkins.io
 until kubectl get nodes; do sleep 1; done #Wait for the cluster to be ready
-helm upgrade --install jenkins jenkins/jenkins --version 3.7.1 -n jenkins --create-namespace -f https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/master/jenkins_3.8.3_values.yaml
+##TO DO: rename branch
+helm upgrade --install jenkins jenkins/jenkins --version 3.7.1 -n jenkins --create-namespace -f https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/andrea/jenkins_3.8.3_values.yaml
