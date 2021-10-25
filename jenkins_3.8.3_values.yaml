@@ -336,7 +336,7 @@ controller:
                           stages {
                               stage('Docker Build') {
                                   steps {
-                                      sh "git clone https://github.com/andreazorzetto/aqua-training-userscript.git"
+                                      git url: 'https://github.com/andreazorzetto/aqua-training-userscript.git'
                                       sh "ls -la"
                                       echo "Building image."
                                   }
