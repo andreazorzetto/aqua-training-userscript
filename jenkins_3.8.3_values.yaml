@@ -216,7 +216,8 @@ controller:
   # loadBalancerIP: 1.2.3.4
   # Optionally configure a JMX port
   # requires additional javaOpts, ie
-  # javaOpts: >
+  javaOpts: >
+    -Dpermissive-script-security.enabled=true
   #   -Dcom.sun.management.jmxremote.port=4000
   #   -Dcom.sun.management.jmxremote.authenticate=false
   #   -Dcom.sun.management.jmxremote.ssl=false
@@ -233,6 +234,7 @@ controller:
     - git:4.9.0
     - configuration-as-code:1.53
     - job-dsl:1.77
+    - permissive-script-security:0.7
 
   # Set to false to download the minimum required version of all dependencies.
   installLatestPlugins: true
