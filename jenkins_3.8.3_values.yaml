@@ -352,11 +352,6 @@ controller:
                                   }
                               }
                           }
-                          post {
-                              always {
-                                  deleteDir()
-                              }
-                          }
                       }""".stripIndent())
                   }
                 }
