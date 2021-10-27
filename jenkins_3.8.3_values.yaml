@@ -328,31 +328,10 @@ controller:
           - script: >
               pipelineJob('docker-build-pipeline') {
                 definition {
-                  cps {
-                    script("""\
-                      pipeline {
-                          agent any
-
-                          stages {
-                              stage('Docker Build') {
-                                  steps {
-                                      git url: 'https://github.com/andreazorzetto/aqua-training-userscript.git'
-                                      sh "ls -la"
-                                      echo "Building image."
-                                  }
-                              }
-                              stage('Push to Registry'){
-                                  steps {
-                                      echo "Push the image to registry without vulnerability scan. Love living on the edge"
-                                  }
-                              }
-                              stage('Deploy Wokload'){
-                                  steps {
-                                      echo "Run the workload. Security... is not my problem"
-                                  }
-                              }
-                          }
-                      }""".stripIndent())
+                  cpsScm {
+                    scm {
+                      git('https://github.com/jenkinsci/job-dsl-plugin.git')
+                    }
                   }
                 }
               }
