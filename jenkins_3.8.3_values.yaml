@@ -330,7 +330,7 @@ controller:
                 definition {
                   cpsScm {
                     scm {
-                      git('https://github.com/jenkinsci/job-dsl-plugin.git')
+                      git('https://github.com/andreazorzetto/aqua-training-userscript.git')
                     }
                   }
                 }
