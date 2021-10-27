@@ -334,7 +334,7 @@ controller:
                         agent {
                           kubernetes {
                             label 'example-kaniko-volumes'
-                            yaml """
+                            yaml '''
                       kind: Pod
                       metadata:
                         name: kaniko
@@ -386,7 +386,7 @@ controller:
                                 items:
                                   - key: .dockerconfigjson
                                     path: config.json
-                      """
+                      '''
                           }
                         }
                         stages {
@@ -396,11 +396,11 @@ controller:
                             }
                             steps {
                               container(name: 'kaniko', shell: '/busybox/sh') {
-                                writeFile file: "Dockerfile", text: """
+                                writeFile file: "Dockerfile", text: '''
                                   FROM openliberty/open-liberty:21.0.0.5-kernel-slim-java11-openj9-ubi
                                   MAINTAINER Aqua
                                   RUN mkdir /tmp/success
-                                """
+                                '''
 
                                 sh '''#!/busybox/sh
                                   /kaniko/executor --context `pwd` --verbosity debug --destination morgantatkins/open-liberty:21.0.0.5-kernel-slim-java11-openj9-ubi
