@@ -5,7 +5,25 @@ docker login registry.aquasec.com
 ```
 
 ## Example json Object
+Run the following command in your instance:
 
+```
+docker login registry.aquasec.com
+```
+
+This command will write a json file with credentials `/root/.docker/config.json`:
+```
+$ docker login registry.aquasec.com
+Username: andrea.zorzetto@aquasec.com
+Password: 
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+```
+
+The config.json file will look like this, and you can use the following command to create a kubernetes secret with it:
 ```
 {
     "auths": {
@@ -18,7 +36,7 @@ docker login registry.aquasec.com
     }
 }
 
-kubectl create secret generic dockercred --from-file=.dockerconfigjson=$HOME/.docker/config.json -n jenkins
+kubectl create secret generic dockercred --from-file=.dockerconfigjson=/root/.docker/config.json -n jenkins
 ```
 
 # Install the Jenkins Aqua Plugin

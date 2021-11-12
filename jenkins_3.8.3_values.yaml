@@ -733,6 +733,9 @@ agent:
    - type: HostPath
      hostPath: /var/run/docker.sock
      mountPath: /var/run/docker.sock
+   - type: HostPath
+     hostPath: /root/.docker/config.json
+     mountPath: /root/.docker/config.json
   # - type: Nfs
   #   mountPath: /var/myapp/mynfs
   #   readOnly: false
@@ -775,7 +778,7 @@ agent:
   # jenkins-agent: v1
 
   # Executed command when side container gets started
-  command:
+  command: ""
   args: "${computer.jnlpmac} ${computer.name}"
   # Side container name
   sideContainerName: "jnlp"
