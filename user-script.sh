@@ -30,8 +30,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=aquauser
-WorkingDirectory=/home/aquauser/
+User=$username
+WorkingDirectory=/home/$username/
 ExecStart=/usr/local/bin/wetty -p 8080 --sshuser $username
 Restart=always
 
