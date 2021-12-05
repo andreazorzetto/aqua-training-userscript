@@ -11,7 +11,7 @@ done
 ##---------------- SSH User -----------------------##
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 systemctl restart sshd
-useradd -m -p $(perl -e "print crypt("$password", "salt")") -G sudo $username
+useradd -m -p $(perl -e "print crypt("$password", "salt")") -G sudo $usernametet
 
 
 ##---------------- Requirements -----------------------##
