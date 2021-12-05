@@ -52,3 +52,24 @@ Aqua URL: https://uybasiybksjdfbvujbsdvkubsdvkub.us-east-2.elb.amazonaws.com:808
 User: administrator
 Password: password
 ```
+
+# Test with Vagrant
+Test the user script used as the ec2 instance bootstrap in Vagrant
+
+Create Vagrant machine
+```
+vagrant up
+```
+
+SSH into the Vagrant machine
+```
+vagrant ssh
+```
+
+Clean up
+```
+vagrant halt
+vagrant destroy
+```
+
+Credentials are by default set to be test/test
