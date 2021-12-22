@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## Parsing arguments for username and password
-while getopts u:p: flag
+while getopts u:p:b: flag
 do
     case "${flag}" in
         u) username=${OPTARG};;
