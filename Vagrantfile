@@ -29,7 +29,6 @@ Vagrant.configure("2") do |config|
   # within the machine from a port on the host machine and only allow access
   # via 127.0.0.1 to disable public access
   config.vm.network "forwarded_port", guest: 30080, host: 30080, host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -52,7 +51,7 @@ Vagrant.configure("2") do |config|
   #
   config.vm.provider "virtualbox" do |vb|
     # Customize the amount of memory on the VM:
-    vb.memory = "3096"
+    vb.memory = "4096"
   end
   #
   # View the documentation for the provider you are using for more
@@ -62,6 +61,6 @@ Vagrant.configure("2") do |config|
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-    curl -sL https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/master/user-script.sh | bash -s -- -u test -p test
+    curl -sL https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/master/user-script.sh | bash -s -- -u test -p test -b master
   SHELL
 end
