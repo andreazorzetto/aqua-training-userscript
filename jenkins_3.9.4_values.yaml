@@ -19,7 +19,8 @@ controller:
   # Used for label app.kubernetes.io/component
   componentName: "jenkins-controller"
   image: "jenkins/jenkins"
-  tag: "2.303.2-jdk11"
+  # tag: "2.319.1-jdk11"
+  tagLabel: jdk11
   imagePullPolicy: "Always"
   imagePullSecretName:
   # Optionally configure lifetime for controller-container
@@ -45,7 +46,7 @@ controller:
   # If you disable the non-Jenkins identity store and instead use the Jenkins internal one,
   # you should revert controller.adminUser to your preferred admin user:
   adminUser: "admin"
-  adminPassword: "admin"
+  # adminPassword: <defaults to random>
   admin:
     existingSecret: ""
     userKey: jenkins-admin-user
@@ -115,6 +116,12 @@ controller:
   #   runAsNonRoot: true
   #   supplementalGroups: [1000]
   #   # capabilities: {}
+  # Container securityContext
+  containerSecurityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
   servicePort: 8080
   targetPort: 8080
   # For minikube, set this to NodePort, elsewhere use LoadBalancer
@@ -229,11 +236,11 @@ controller:
 
   # List of plugins to be install during Jenkins controller start
   installPlugins:
-    - kubernetes:1.30.1
+    - kubernetes:1.30.11
     - workflow-aggregator:2.6
-    - git:4.9.0
-    - configuration-as-code:1.53
-    - job-dsl:1.77
+    - git:4.10.0
+    - configuration-as-code:1.54
+    - job-dsl:1.78.1
     - permissive-script-security:0.7
 
   # Set to false to download the minimum required version of all dependencies.
@@ -474,6 +481,9 @@ controller:
       # Otherwise the namespace in which the sidecar is running will be used.
       # It's also possible to specify ALL to search in all namespaces:
       # searchNamespace:
+      containerSecurityContext:
+        readOnlyRootFilesystem: true
+        allowPrivilegeEscalation: false
 
     # Allows you to inject additional/other sidecars
     other: []
@@ -724,18 +734,18 @@ agent:
   # Configure the attributes as they appear in the corresponding Java class for that type
   # https://github.com/jenkinsci/kubernetes-plugin/tree/master/src/main/java/org/csanchez/jenkins/plugins/kubernetes/volumes
   volumes:
+  - type: HostPath
+    hostPath: /var/run/docker.sock
+    mountPath: /var/run/docker.sock
+  - type: HostPath
+    hostPath: /root/.docker/config.json
+    mountPath: /root/.docker/config.json
   # - type: ConfigMap
   #   configMapName: myconfigmap
   #   mountPath: /var/myapp/myconfigmap
   # - type: EmptyDir
   #   mountPath: /var/myapp/myemptydir
   #   memory: false
-   - type: HostPath
-     hostPath: /var/run/docker.sock
-     mountPath: /var/run/docker.sock
-   - type: HostPath
-     hostPath: /root/.docker/config.json
-     mountPath: /root/.docker/config.json
   # - type: Nfs
   #   mountPath: /var/myapp/mynfs
   #   readOnly: false
@@ -778,14 +788,14 @@ agent:
   # jenkins-agent: v1
 
   # Executed command when side container gets started
-  command: ""
+  command:
   args: "${computer.jnlpmac} ${computer.name}"
   # Side container name
   sideContainerName: "jnlp"
   # Doesn't allocate pseudo TTY by default
   TTYEnabled: false
   # Max number of spawned agent
-  containerCap: 2
+  containerCap: 10
   # Pod name
   podName: "default"
   # Allows the Pod to remain active for reuse until the configured number of
