@@ -14,35 +14,6 @@ systemctl restart sshd
 useradd -m -p $(perl -e "print crypt('$password', "salt")") -G sudo $username
 
 
-##---------------- Requirements -----------------------##
-curl -sL https://deb.nodesource.com/setup_16.x | bash -
-apt install -y nodejs build-essential docker.io
-
-
-##---------------- Wetty -----------------------##
-npm install -g yarn
-yarn global add wetty
-
-cat <<END > /etc/systemd/system/wetty.service
-[Unit]
-Description=Wetty terminal on Web
-After=network.target
-
-[Service]
-Type=simple
-User=$username
-WorkingDirectory=/home/$username/
-ExecStart=/usr/local/bin/wetty -p 8080 --sshuser $username
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-END
-
-systemctl enable wetty.service
-systemctl start wetty.service
-
-
 ##---------------- k3sup -----------------------##
 curl -sLS https://get.k3sup.dev | sh
 mkdir /root/.kube
