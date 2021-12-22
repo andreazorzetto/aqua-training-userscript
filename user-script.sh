@@ -33,7 +33,7 @@ k3sup install --local --local-path=/root/kubeconfig --k3s-extra-args "--disable-
 export KUBECONFIG=/root/kubeconfig
 
 # Give user r/w permission to kubeconfig
-chown $username: /home/$username/.kube/config
+chown $username: -R /home/$username/.kube
 
 ##---------------- kubectx and kubens -----------------------##
 wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubens -O /usr/local/bin/kubens
