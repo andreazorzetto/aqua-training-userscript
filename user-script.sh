@@ -14,7 +14,7 @@ systemctl restart sshd
 useradd -m -p $(perl -e "print crypt('$password', "salt")") -G sudo $username
 
 ##---------------- Requirements -----------------------##
-apt install -y nodejs build-essential docker.io
+apt update && apt install -y docker.io
 
 ##---------------- k3sup -----------------------##
 curl -sLS https://get.k3sup.dev | sh
