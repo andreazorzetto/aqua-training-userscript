@@ -29,7 +29,7 @@ usermod -a -G docker $username
 
 ##---------------- k3sup -----------------------##
 curl -sLS https://get.k3sup.dev | sh
-k3sup install --local --k3s-extra-args "--disable-cloud-controller --disable traefik --disable servicelb --docker -o /home/$username/.kube/config"
+k3sup install --local --local-path=/root/kubeconfig --k3s-extra-args "--disable-cloud-controller --disable traefik --disable servicelb --docker -o /home/$username/.kube/config"
 export KUBECONFIG=/root/kubeconfig
 
 # Give user r/w permission to kubeconfig
