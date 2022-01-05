@@ -62,6 +62,6 @@ Vagrant.configure("2") do |config|
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-    curl -sL https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/0.2/user-script.sh | bash -s -- -u test -p test
+    curl -sL https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/0.2.1/user-script.sh | bash -s -- -u test -p test
   SHELL
 end
