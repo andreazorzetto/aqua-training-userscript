@@ -327,9 +327,13 @@ controller:
                   }
                 }
                 steps {
-                  shell('echo "Building image."')
-                  shell('echo "Push the image to registry without vulnerability scan. Love living on the edge"')
-                  shell('echo "Run the workload. Security... is not my problem"')
+                  shell('''
+                  cat <<EOF > Dockerfile
+                  FROM aquapartnersrepo.azurecr.io/tapimage
+                  RUN echo "Do nothing the image is perfectly safe."
+                  EOF
+                  ''')
+                  shell('docker build . -t tapimage:mytag')
                 }
               }
           - script: >
