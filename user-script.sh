@@ -35,11 +35,14 @@ export KUBECONFIG=/root/kubeconfig
 # Give user r/w permission to kubeconfig
 chown $username: -R /home/$username/.kube
 
-##---------------- kubectx and kubens -----------------------##
+##---------------- kubectx, kubens and k9s -----------------------##
 wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubens -O /usr/local/bin/kubens
 wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubectx -O /usr/local/bin/kubectx
 chmod +x /usr/local/bin/kube*
 
+snap install k9s
+mkdir /home/$username/.k9s
+chown -R $username: /home/$username/.k9s
 
 ##---------------- env vars, bashrc and aliases -----------------------##
 cat <<END >>/home/$username/.bashrc
