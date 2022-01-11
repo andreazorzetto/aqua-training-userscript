@@ -236,11 +236,11 @@ controller:
 
   # List of plugins to be install during Jenkins controller start
   installPlugins:
-    - kubernetes:1.30.11
+    - kubernetes:1.31.2
     - workflow-aggregator:2.6
-    - git:4.10.0
+    - git:4.10.1
     - configuration-as-code:1.55
-    - job-dsl:1.78.1
+    - job-dsl:1.78.3
     - permissive-script-security:0.7
 
   # Set to false to download the minimum required version of all dependencies.
@@ -327,105 +327,41 @@ controller:
                   }
                 }
                 steps {
-                  shell('''
-                  cat <<EOF > Dockerfile
-                  FROM aquapartnersrepo.azurecr.io/tapimage
-                  RUN echo "Do nothing the image is perfectly safe."
-                  EOF
-                  ''')
-                  shell('docker build . -t tapimage:mytag')
+                  shell('''cat <<EOF > Dockerfile
+              FROM mlinarik/log4j-log4shell-vulnerable-app
+              
+              RUN echo "Do nothing the image is perfectly safe."
+              
+              EOF
+        
+              
+              docker build . -t tapimage:freestyle
+              
+              
+              docker images''')
+                  shell('echo "Scan step to be implemented"')
                 }
               }
           - script: >
               pipelineJob('docker-build-pipeline') {
                 definition {
                   cps {
-                    script("""\
-                      pipeline {
-                        agent {
-                          kubernetes {
-                            yaml '''
-                      kind: Pod
-                      metadata:
-                        name: docker
-                      spec:
-                        containers:
-                        - name: docker-client
-                          image: docker:19.03.1
-                          command: ['sleep', '99d']
-                          env:
-                            - name: DOCKER_HOST
-                              value: tcp://localhost:2375
-                          volumeMounts:
-                            - name: jenkins-docker-cfg
-                              mountPath: /root/.docker
-                        - name: docker-daemon
-                          image: docker:19.03.1-dind
-                          env:
-                            - name: DOCKER_TLS_CERTDIR
-                              value: ""
-                          securityContext:
-                            privileged: true
-                          volumeMounts:
-                            - name: cache
-                              mountPath: /var/lib/docker
-                            - name: jenkins-docker-cfg
-                              mountPath: /root/.docker
-                        - name: jnlp
-                          workingDir: /home/jenkins
-                        volumes:
-                        - name: cache
-                          hostPath:
-                            path: /tmp
-                            type: Directory
-                        - name: jenkins-docker-cfg
-                          projected:
-                            sources:
-                            - secret:
-                                name: dockercred
-                                items:
-                                  - key: .dockerconfigjson
-                                    path: config.json
-                      '''
-                          }
-                        }
-                        stages {
-                          stage('Build with Docker') {
-                              steps {
-                                  container(name: 'docker-client') {
-                                      writeFile file: "Dockerfile", text: '''
-                                      FROM openliberty/open-liberty:21.0.0.5-kernel-slim-java11-openj9-ubi
-                                      MAINTAINER Aqua
-                                      RUN mkdir /tmp/success
-                                      '''
-
-                                      sh '''
-                                      docker build . -t open-liberty:insecure
-                                      docker images
-                                      '''
-                                  }
-                              }
-                          }
-                          stage('Scan image with Aqua') {
-                              steps {
-                                  container(name: 'docker-client') {
-                                      echo "To be implemented"
-                                  }
-                              }
-                          }
-                          stage('Push image to registry') {
-                              steps {
-                                  container(name: 'docker-client') {
-                                      echo "To be implemented"
-                                      // sh '''
-                                      // docker tag open-liberty:insecure xxx/open-liberty:insecure
-                                      // docker push xxx/open-liberty:insecure
-                                      // '''
-                                  }
-                              }
-                          }
-                        }
-                      }""".stripIndent())
+                    script("""node {
+                stage('Build with Docker') {
+                  writeFile file: "Dockerfile", text: '''
+                    FROM mlinarik/log4j-log4shell-vulnerable-app
+                    RUN echo "Do nothing the image is perfectly safe."
+                    '''
+                
+                    sh '''
+                    docker build . -t tapimage:pipeline
+                    docker images
+                    '''
+                }
+                stage('Scan image with Aqua') {
+                  echo "To be implemented"
+                }
+              }""".stripIndent())
                   }
                 }
               }
@@ -741,15 +677,18 @@ agent:
   - type: HostPath
     hostPath: /var/run/docker.sock
     mountPath: /var/run/docker.sock
-  - type: HostPath
-    hostPath: /root/.docker/config.json
-    mountPath: /root/.docker/config.json
+#  - type: HostPath
+#    hostPath: /root/.docker/config.json
+#    mountPath: /root/.docker/config.json
   # - type: ConfigMap
   #   configMapName: myconfigmap
   #   mountPath: /var/myapp/myconfigmap
   # - type: EmptyDir
   #   mountPath: /var/myapp/myemptydir
   #   memory: false
+  # - type: HostPath
+  #   hostPath: /var/lib/containers
+  #   mountPath: /var/myapp/myhostpath
   # - type: Nfs
   #   mountPath: /var/myapp/mynfs
   #   readOnly: false
