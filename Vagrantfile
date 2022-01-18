@@ -62,6 +62,6 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     sudo su -
-    curl -sL https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/0.3.0/user-script.sh | bash -s -- -u test -p test -b master
+    curl -sL https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/0.3/user-script.sh | bash -s -- -u test -p test -b 0.3
   SHELL
 end
