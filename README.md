@@ -65,7 +65,7 @@ The script accepts the following arguments:
 Example:
 
 ```
-./user-script.sh -u test -p password -b master
+./user-script.sh -u test -p password -b <branch>
 ```
 
 # Test with Vagrant
