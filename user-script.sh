@@ -46,7 +46,7 @@ chown -R $username: /home/$username/.k9s
 
 ##---------------- env vars, bashrc and aliases -----------------------##
 cat <<END >>/home/$username/.bashrc
-export KUBECONFIG=.kube/config
+export KUBECONFIG=/home/$username/.kube/config
 alias k=kubectl
 alias kns=kubens
 alias ktx=kubectx
