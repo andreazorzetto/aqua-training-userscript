@@ -239,7 +239,7 @@ controller:
     - kubernetes:1.31.2
     - workflow-aggregator:2.6
     - git:4.10.1
-    - configuration-as-code:1.55
+    - configuration-as-code:1414.v878271fc496f
     - job-dsl:1.78.3
     - permissive-script-security:0.7
 
@@ -247,7 +247,7 @@ controller:
   installLatestPlugins: true
 
   # Set to true to download latest dependencies of any plugin that is requested to have the latest version.
-  installLatestSpecifiedPlugins: false
+  installLatestSpecifiedPlugins: true
 
   # List of plugins to install in addition to those listed in controller.installPlugins
   additionalPlugins: []
