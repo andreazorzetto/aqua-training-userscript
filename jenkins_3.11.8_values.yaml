@@ -1,4 +1,4 @@
-jenkins_3.11.8_values.yaml# Default values for jenkins.
+# Default values for jenkins.
 # This is a YAML-formatted file.
 # Declare name/value pairs to be passed into your templates.
 # name: value
@@ -331,7 +331,7 @@ controller:
                 }
                 steps {
                   shell('''cat <<EOF > Dockerfile
-              FROM mlinarik/log4j-log4shell-vulnerable-app
+              FROM andreazorzetto/log4shell-vulnerable-app
               
               RUN echo "Do nothing the image is perfectly safe."
               
