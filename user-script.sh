@@ -61,4 +61,4 @@ helm repo add jenkins https://charts.jenkins.io
 until kubectl get nodes; do sleep 1; done
 
 # Install Jenkins
-helm upgrade --install jenkins jenkins/jenkins --version 3.10.2 -n jenkins --create-namespace -f https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/$bootstrapversion/jenkins_3.10.2_values.yaml --set controller.adminUser=$username,controller.adminPassword=$password
+helm upgrade --install jenkins jenkins/jenkins --version 3.11.8 -n jenkins --create-namespace -f https://raw.githubusercontent.com/andreazorzetto/aqua-training-userscript/$bootstrapversion/jenkins_3.11.8_values.yaml --set controller.adminUser=$username,controller.adminPassword=$password

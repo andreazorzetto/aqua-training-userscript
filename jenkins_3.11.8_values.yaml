@@ -126,7 +126,7 @@ controller:
   targetPort: 8080
   # For minikube, set this to NodePort, elsewhere use LoadBalancer
   # Use ClusterIP if your setup includes ingress controller
-  serviceType: ClusterIP
+  serviceType: NodePort
   # Use Local to preserve the client source IP and avoids a second hop for LoadBalancer and Nodeport type services,
   # but risks potentially imbalanced traffic spreading.
   serviceExternalTrafficPolicy:
@@ -142,7 +142,7 @@ controller:
   # Put labels on Jenkins controller pod
   podLabels: {}
   # Used to create Ingress record (should used with ServiceType: ClusterIP)
-  # nodePort: <to set explicitly, choose port between 30000-32767
+  nodePort: 30080
   # Enable Kubernetes Startup, Liveness and Readiness Probes
   # if Startup Probe is supported, enable it too
   # ~ 2 minutes to allow Jenkins to restart when upgrading plugins. Set ReadinessTimeout to be shorter than LivenessTimeout.
@@ -226,7 +226,8 @@ controller:
   # loadBalancerIP: 1.2.3.4
   # Optionally configure a JMX port
   # requires additional javaOpts, ie
-  # javaOpts: >
+  javaOpts: >
+    -Dpermissive-script-security.enabled=true
   #   -Dcom.sun.management.jmxremote.port=4000
   #   -Dcom.sun.management.jmxremote.authenticate=false
   #   -Dcom.sun.management.jmxremote.ssl=false
@@ -241,13 +242,15 @@ controller:
     - kubernetes:1.31.3
     - workflow-aggregator:2.6
     - git:4.10.2
-    - configuration-as-code:1.55.1
+    - configuration-as-code:1414.v878271fc496f
+    - job-dsl:1.78.3
+    - permissive-script-security:0.7
 
   # Set to false to download the minimum required version of all dependencies.
   installLatestPlugins: true
 
   # Set to true to download latest dependencies of any plugin that is requested to have the latest version.
-  installLatestSpecifiedPlugins: false
+  installLatestSpecifiedPlugins: true
 
   # List of plugins to install in addition to those listed in controller.installPlugins
   additionalPlugins: []
@@ -314,7 +317,57 @@ controller:
   # etc.  Best reference is https://<jenkins_url>/configuration-as-code/reference.  The example below creates a welcome message:
   JCasC:
     defaultConfig: true
-    configScripts: {}
+    configScripts:
+      aqua-jobs: |-
+        jobs:
+          - script: >
+              job('docker-build-freestyle') {
+                scm {
+                  git {
+                    remote {
+                      url 'https://github.com/andreazorzetto/aqua-training-userscript.git'
+                    }
+                  }
+                }
+                steps {
+                  shell('''cat <<EOF > Dockerfile
+              FROM mlinarik/log4j-log4shell-vulnerable-app
+              
+              RUN echo "Do nothing the image is perfectly safe."
+              
+              EOF
+        
+              
+              docker build . -t tapimage:freestyle
+              
+              
+              docker images''')
+                  shell('echo "Scan step to be implemented"')
+                }
+              }
+          - script: >
+              pipelineJob('docker-build-pipeline') {
+                definition {
+                  cps {
+                    script("""node {
+                stage('Build with Docker') {
+                  writeFile file: "Dockerfile", text: '''
+                    FROM mlinarik/log4j-log4shell-vulnerable-app
+                    RUN echo "Do nothing the image is perfectly safe."
+                    '''
+                
+                    sh '''
+                    docker build . -t tapimage:pipeline
+                    docker images
+                    '''
+                }
+                stage('Scan image with Aqua') {
+                  echo "To be implemented"
+                }
+              }""".stripIndent())
+                  }
+                }
+              }
     #  welcome-message: |
     #    jenkins:
     #      systemMessage: Welcome to our CI\CD server.  This Jenkins is configured and managed 'as code'.
@@ -589,8 +642,10 @@ agent:
   kubernetesReadTimeout: 15
   maxRequestsPerHostStr: "32"
   namespace:
-  image: "jenkins/inbound-agent"
-  tag: "4.11.2-4"
+  # image: "jenkins/inbound-agent"
+  # tag: "4.11.2-4"
+  image: "andreazorzetto/jenkins-inbound-agent"
+  tag: "4.11-1-docker"
   workingDir: "/home/jenkins/agent"
   nodeUsageMode: "NORMAL"
   customJenkinsLabels: []
@@ -621,7 +676,13 @@ agent:
   # Allowed types are: ConfigMap, EmptyDir, HostPath, Nfs, PVC, Secret
   # Configure the attributes as they appear in the corresponding Java class for that type
   # https://github.com/jenkinsci/kubernetes-plugin/tree/master/src/main/java/org/csanchez/jenkins/plugins/kubernetes/volumes
-  volumes: []
+  volumes:
+  - type: HostPath
+    hostPath: /var/run/docker.sock
+    mountPath: /var/run/docker.sock
+#  - type: HostPath
+#    hostPath: /root/.docker/config.json
+#    mountPath: /root/.docker/config.json
   # - type: ConfigMap
   #   configMapName: myconfigmap
   #   mountPath: /var/myapp/myconfigmap
@@ -691,7 +752,7 @@ agent:
   podName: "default"
   # Allows the Pod to remain active for reuse until the configured number of
   # minutes has passed since the last step was executed on it.
-  idleMinutes: 0
+  idleMinutes: 60
   # Raw yaml template for the Pod. For example this allows usage of toleration for agent pods.
   # https://github.com/jenkinsci/kubernetes-plugin#using-yaml-to-define-pod-templates
   # https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
@@ -756,7 +817,7 @@ additionalAgents: {}
 #    TTYEnabled: true
 
 persistence:
-  enabled: true
+  enabled: false
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
   ## If defined, PVC must be created manually before volume will be bound
