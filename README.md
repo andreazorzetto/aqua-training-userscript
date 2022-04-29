@@ -54,20 +54,27 @@ Password: password
 ```
 
 # Boostrap script
-The user-script.sh provided in this repo will prepare the instance for the Aqua Training environment. The script can be called independently than the IaC or used as a local provisioning in Vagrant as for the vagrantfile provided.
+The user-script.sh provided will prepare the instance for the Aqua Training environment. The script can be called independently from the IaC or used to provision a local Vagrant develoment machine with the provided Vagrantfile
 
 The script accepts the following arguments:
+* `-h` | this help
+* `-u` | [default: aquatapuser] username for ssh and jenkins 
+* `-p` | [default: aquatapuser] user password
+* `-l` | use local development helm and manifests to be used together with the provided Vagrantfile
+* `-r` | [default: true] user remote helm and manifests from the repo options -l and -r can't be specified at the same time
+* `-j` | [optional] specify a custom jenkins helm chart version;
 
-* `-u username` | the username used for the SSH user and Jenkins authentication
-* `-p password` | the password for the created user
-* `-b boostrap_version` | the tag or branch from where the additional resources pulled by the script will be taked (e.g. the Jenkins Helm value file)
+Examples:
 
-Example:
-
+Standard boostrap with values from github repo with custom creds
 ```
-./user-script.sh -u test -p password -b <branch>
+./user-script.sh -u aquatapuser -p aquatapuser
 ```
 
+Local vagrant deployment with default creds
+```
+./user-script.sh -l"
+```
 # Test with Vagrant
 Test the user script used as the ec2 instance bootstrap in Vagrant
 
