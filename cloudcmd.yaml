@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: CCMDNAMESPACE
+  name: cloudcmd
+spec:
+  finalizers:
+  - kubernetes
+status:
+  phase: Active
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cloudcmd
+  name: cloudcmd
+  namespace: CCMDNAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudcmd
+  template:
+    metadata:
+      labels:
+        app: cloudcmd
+    spec:
+      containers:
+      - image: coderaiser/cloudcmd
+        name: cloudcmd
+        resources: {}
+        imagePullPolicy: Always
+        env:
+        - name: CLOUDCMD_AUTH
+          value: "true"
+        - name: CLOUDCMD_USERNAME
+          value: CMDUSER
+        - name: CLOUDCMD_PASSWORD
+          value: CMDPASSWD
+        - name: CLOUDCMD_ROOT
+          value: CMDROOT
+        - name: CLOUDCMD_TERMINAL
+          value: "false"
+        - name: CLOUDCMD_CONSOLE
+          value: "false"
+        volumeMounts:
+        - name: host
+          mountPath: DEPLOYMENTRESOURCES
+      volumes:
+      - name: host
+        hostPath:
+          path: DEPLOYMENTRESOURCES
+        
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cloudcmd
+  name: cloudcmd
+  namespace: CCMDNAMESPACE
+spec:
+  ports:
+  - name: "http"
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+    nodePort: 30081
+  selector:
+    app: cloudcmd
+  type: NodePort
