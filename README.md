@@ -73,7 +73,7 @@ Standard boostrap with values from github repo with custom creds
 
 Local vagrant deployment with default creds
 ```
-./user-script.sh -l"
+./user-script.sh -l
 ```
 # Test with Vagrant
 Test the user script used as the ec2 instance bootstrap in Vagrant
