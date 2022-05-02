@@ -1,25 +1,25 @@
 #!/bin/bash
 
-## default user creds
+# default user creds
 username=aquatapuser
 password=aquatapuser
 user_home="/home/$username"
 
-## installation type
+# installation type
 remote_resources=true
 
-## jenkins
+# jenkins
 jenkins_helm_chart_version=3.12.0
 local_jenkins_values_path="/vagrant_data/jenkins_${jenkins_helm_chart_version}_values.yaml"
 
-## deployments
+# deployments
 deployment_resources_path="$user_home/deployments"
 
-## cloudcmd
+# cloudcmd
 cloudcmd_namespace="cloudcmd"
 local_cloudcmd_path="/vagrant_data/cloudcmd.yaml"
 
-##---------------- Software Requirements -----------------------##
+# Software Requirements
 show_help(){
 echo "Userscript for tap instance bootrap.
 
@@ -42,7 +42,7 @@ Examples:
 ./user-script.sh -l"
 }
 
-## Parsing arguments for username and password
+# Parsing arguments for username and password
 while getopts h?u:p:j:lr flag
 do
     case "${flag}" in
@@ -67,13 +67,13 @@ do
 done
 
 
-##---------------- Software Requirements -----------------------##
+# Software Requirements
 software_requirements(){
     apt update && apt install -y docker.io
     snap install helm --classic # Install Helm
 }
 
-##---------------- SSH User -----------------------##
+# SSH User
 setup_ssh(){
     # Allow SSH password authentication
     sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
@@ -89,7 +89,7 @@ setup_user(){
 }
 
 setup_k3s(){
-    ##---------------- k3sup -----------------------##
+    # k3sup
     curl -sLS https://get.k3sup.dev | sh
     k3sup install --local --local-path=/root/kubeconfig --k3s-extra-args "--disable-cloud-controller --disable traefik --disable servicelb --docker -o /home/$username/.kube/config"
     export KUBECONFIG=/root/kubeconfig
@@ -99,7 +99,7 @@ setup_k3s(){
 }
 
 install_utilities(){
-    ##---------------- kubectx, kubens and k9s -----------------------##
+    # kubectx, kubens and k9s
     wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubens -O /usr/local/bin/kubens
     wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubectx -O /usr/local/bin/kubectx
     chmod +x /usr/local/bin/kube*
@@ -111,17 +111,24 @@ install_utilities(){
 
 setup_userenv(){
 
-##---------------- env vars, bashrc and aliases -----------------------##
+# kubectl autocompletion
+kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+
+# env vars, bashrc and aliases
 cat <<END >>/home/$username/.bashrc
+
 export KUBECONFIG=/home/$username/.kube/config
+
 alias k=kubectl
 alias kns=kubens
 alias ktx=kubectx
 alias h=helm
+
+complete -F __start_kubectl k
 END
 }
 
-##---------------- Jenkins -----------------------##
+# Jenkins
 deploy_jenkins(){
     export KUBECONFIG=/root/kubeconfig
 
@@ -163,7 +170,7 @@ deploy_cloudcmd(){
         kubectl apply -f /tmp/cloudcmd.yaml
     fi
 
-    # rm /tmp/cloudcmd.yaml
+    rm /tmp/cloudcmd.yaml
 }
 
 download_deployment_resources(){
