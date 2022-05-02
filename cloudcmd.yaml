@@ -45,6 +45,8 @@ spec:
           value: "false"
         - name: CLOUDCMD_CONSOLE
           value: "false"
+        - name: CLOUDCMD_ONE_FILE_PANEL
+          value: "true"
         volumeMounts:
         - name: host
           mountPath: DEPLOYMENTRESOURCES
