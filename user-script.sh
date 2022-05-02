@@ -144,8 +144,11 @@ deploy_cloudcmd(){
     if [ $remote_resources == true ]; then
         wget https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/master/cloudcmd.yaml -O /tmp/cloudcmd.yaml
         
-        sed -i "s/CCMDNAMESPACE/$cloudcmd_namespace/g"
-        sed -i "s/DEPLOYMENTRESOURCES/$deployment_resources_path/g"
+        sed -i "s@CCMDNAMESPACE@$cloudcmd_namespace@g" /tmp/cloudcmd.yaml
+        sed -i "s@DEPLOYMENTRESOURCES@$deployment_resources_path@g" /tmp/cloudcmd.yaml
+        sed -i "s@CMDUSER@$username@g" /tmp/cloudcmd.yaml
+        sed -i "s@CMDPASSWD@$password@g" /tmp/cloudcmd.yaml
+        sed -i "s@CMDROOT@$user_home@g" /tmp/cloudcmd.yaml
 
         kubectl apply -f /tmp/cloudcmd.yaml
     else
@@ -157,7 +160,6 @@ deploy_cloudcmd(){
         sed -i "s@CMDPASSWD@$password@g" /tmp/cloudcmd.yaml
         sed -i "s@CMDROOT@$user_home@g" /tmp/cloudcmd.yaml
         
-        # need to mount cm and test
         kubectl apply -f /tmp/cloudcmd.yaml
     fi
 
