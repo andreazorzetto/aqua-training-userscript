@@ -8,6 +8,10 @@ user_home="/home/$username"
 # installation type
 remote_resources=true
 
+# k3s
+k3s_version=v1.24.4+k3s1
+cri_dockerd_url=https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.5/cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
+
 # jenkins
 jenkins_helm_chart_version=3.12.0
 local_jenkins_values_path="/vagrant_data/jenkins_${jenkins_helm_chart_version}_values.yaml"
@@ -67,46 +71,75 @@ do
 done
 
 
-# Software Requirements
-software_requirements(){
-    apt update && apt install -y docker.io
-    snap install helm --classic # Install Helm
-}
-
-# SSH User
+# Setup SSH password authentication
 setup_ssh(){
     # Allow SSH password authentication
     sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
     systemctl restart sshd
 }
 
-setup_user(){
+create_users(){
     # Create user
     useradd -m -s /bin/bash -p $(perl -e "print crypt('$password', "salt")") -G sudo $username
+}
+
+setup_docker(){
+    apt update && apt install -y docker.io
+
+    # Install cri-dockerd wrapper for docker shim (required by k3s v1.24+)
+    wget -O "/tmp/cri-dockerd.deb" $cri_dockerd_url
+    apt install /tmp/cri-dockerd.deb -y
 
     # Add user to docker group
     usermod -a -G docker $username
+
+}
+
+setup_cri-dockerd(){
+  # Install cri-dockerd
+  VER=$(curl -s https://api.github.com/repos/Mirantis/cri-dockerd/releases/latest|grep tag_name | cut -d '"' -f 4|sed 's/v//g')
+  wget https://github.com/Mirantis/cri-dockerd/releases/download/v${VER}/cri-dockerd-${VER}.amd64.tgz
+  tar xvf cri-dockerd-${VER}.amd64.tgz
+  mv cri-dockerd/cri-dockerd /usr/local/bin/
+
+  # Setup systemd units
+  wget https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.service
+  wget https://raw.githubusercontent.com/Mirantis/cri-dockerd/master/packaging/systemd/cri-docker.socket
+  mv cri-docker.socket cri-docker.service /etc/systemd/system/
+  sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+
+  # Start and enable all services
+  systemctl daemon-reload
+  systemctl enable cri-docker.service
+  systemctl enable --now cri-docker.socket
+
 }
 
 setup_k3s(){
+
+    # setup dockershim requirement
+    # requirement deprecated with v1.24.4+k3s1
+    # setup_cri-dockerd
+
     # k3sup
     curl -sLS https://get.k3sup.dev | sh
-    k3sup install --local --local-path=/root/kubeconfig --k3s-extra-args "--disable-cloud-controller --disable traefik --disable servicelb --docker -o /home/$username/.kube/config"
+    k3sup install --local --local-path=/root/kubeconfig --k3s-version=$k3s_version --k3s-extra-args "--disable-cloud-controller --disable traefik --disable servicelb --docker -o /home/$username/.kube/config"
     export KUBECONFIG=/root/kubeconfig
 
     # Give user r/w permission to kubeconfig
     chown $username: -R /home/$username/.kube
 }
 
-install_utilities(){
-    # kubectx, kubens and k9s
+install_k8s_utilities(){
+    # kubectx, kubens, k9s
     wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubens -O /usr/local/bin/kubens
     wget https://github.com/ahmetb/kubectx/releases/download/v0.9.4/kubectx -O /usr/local/bin/kubectx
-    chmod +x /usr/local/bin/kube*
+    wget https://github.com/derailed/k9s/releases/download/v0.26.3/k9s_Linux_x86_64.tar.gz -O /tmp/k9s_Linux_x86_64.tar.gz
+    tar xzvf /tmp/k9s_Linux_x86_64.tar.gz -C /usr/local/bin/ k9s
+    chmod +x /usr/local/bin/k*
 
-    snap install k9s
-    mkdir /home/$username/.k9s
-    chown -R $username: /home/$username/.k9s
+    # helm
+    snap install helm --classic
 }
 
 setup_userenv(){
@@ -181,11 +214,11 @@ download_deployment_resources(){
 }
 
 
-software_requirements
 setup_ssh
-setup_user
+create_users
+setup_docker
 setup_k3s
-install_utilities
+install_k8s_utilities
 setup_userenv
 deploy_jenkins
 deploy_cloudcmd
