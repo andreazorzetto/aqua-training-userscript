@@ -7,6 +7,7 @@ user_home="/home/$username"
 
 # installation type
 remote_resources=true
+bootstrap_branch=master
 
 # k3s
 k3s_version=v1.24.4+k3s1
@@ -36,6 +37,7 @@ Options available:
     -r              [default: true] user remote helm and manifests from the repo
                     options -l and -r can't be specified at the same time
     -j              specify a custom jenkins helm chart version; defaults to $jenkins_helm_chart_version
+    -b              specify bootstrap branch from where to pull the installation resources (jenkins value file, cloudcmd manifests, etc...)
 
 Examples:
 
@@ -47,7 +49,7 @@ Examples:
 }
 
 # Parsing arguments for username and password
-while getopts h?u:p:j:lr flag
+while getopts h?u:p:j:b:lr flag
 do
     case "${flag}" in
         h|\?)
@@ -67,6 +69,8 @@ do
         j)
             jenkins_helm_chart_version=$OPTARG
             ;;
+        b)
+          bootstrap_branch=$OPTARG
     esac
 done
 
@@ -144,12 +148,11 @@ install_k8s_utilities(){
 
 setup_userenv(){
 
-# kubectl autocompletion
-kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+    # kubectl autocompletion
+    kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
 
-# env vars, bashrc and aliases
-cat <<END >>/home/$username/.bashrc
-
+    # env vars, bashrc and aliases
+    cat <<END >>/home/$username/.bashrc
 export KUBECONFIG=/home/$username/.kube/config
 
 alias k=kubectl
@@ -172,7 +175,7 @@ deploy_jenkins(){
 
     # Install Jenkins
     if [ $remote_resources == true ]; then
-        helm upgrade --install jenkins jenkins/jenkins --version $jenkins_helm_chart_version -n jenkins --create-namespace -f https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/master/jenkins_${jenkins_helm_chart_version}_values.yaml --set controller.adminUser=$username,controller.adminPassword=$password
+        helm upgrade --install jenkins jenkins/jenkins --version $jenkins_helm_chart_version -n jenkins --create-namespace -f https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/${bootstrap_branch}/jenkins_${jenkins_helm_chart_version}_values.yaml --set controller.adminUser=$username,controller.adminPassword=$password
     else
         helm upgrade --install jenkins jenkins/jenkins --version $jenkins_helm_chart_version -n jenkins --create-namespace -f $local_jenkins_values_path --set controller.adminUser=$username,controller.adminPassword=$password
     fi
@@ -182,7 +185,7 @@ deploy_cloudcmd(){
     export KUBECONFIG=/root/kubeconfig
 
     if [ $remote_resources == true ]; then
-        wget https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/master/cloudcmd.yaml -O /tmp/cloudcmd.yaml
+        wget https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/${bootstrap_branch}/cloudcmd.yaml -O /tmp/cloudcmd.yaml
         
         sed -i "s@CCMDNAMESPACE@$cloudcmd_namespace@g" /tmp/cloudcmd.yaml
         sed -i "s@DEPLOYMENTRESOURCES@$deployment_resources_path@g" /tmp/cloudcmd.yaml
