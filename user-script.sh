@@ -13,7 +13,7 @@ k3s_version=v1.24.4+k3s1
 cri_dockerd_url=https://github.com/Mirantis/cri-dockerd/releases/download/v0.2.5/cri-dockerd_0.2.5.3-0.ubuntu-focal_amd64.deb
 
 # jenkins
-jenkins_helm_chart_version=3.12.0
+jenkins_helm_chart_version=4.1.18
 local_jenkins_values_path="/vagrant_data/jenkins_${jenkins_helm_chart_version}_values.yaml"
 
 # deployments
@@ -40,7 +40,7 @@ Options available:
 Examples:
 
 ## Standard boostrap with values from github repo with custom creds and Jenkins version##
-./user-script.sh -u aquatapuser -p aquatapuser -j 3.12.0
+./user-script.sh -u aquatapuser -p aquatapuser -j 4.1.18
 
 ## Local vagrant deployment with default creds ##
 ./user-script.sh -l"
