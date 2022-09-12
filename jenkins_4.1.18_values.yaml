@@ -332,17 +332,24 @@ controller:
                 }
                 steps {
                   shell('''cat <<EOF > Dockerfile
-                  FROM andreazorzetto/log4shell-vulnerable-app
-                  RUN echo "Do nothing the image is perfectly safe."
-                  EOF
-                  
-                  # Build image from Dockerfile
-                  docker build . -t tapimage:freestyle
+              FROM andreazorzetto/log4shell-vulnerable-app
+        
+              RUN echo "Do nothing the image is perfectly safe."
+        
+              EOF
+        
+              
+              # Build image from Dockerfile
+        
+              docker build . -t tapimage:freestyle
 
-                  # List built images
-                  docker images
-                  
-                  ## Implement the Aqua Scan step next''')
+
+              # List built images
+        
+              docker images
+
+              
+              ## Implement the Aqua Scan step next''')
                 }
               }
           - script: >
@@ -659,8 +666,8 @@ agent:
   imagePullSecretName:
   componentName: "jenkins-agent"
   websocket: false
-  privileged: false
-  runAsUser:
+  privileged: true
+  runAsUser: 0
   runAsGroup:
   resources:
     requests:
@@ -677,7 +684,7 @@ agent:
   # Disable if you do not want the Yaml the agent pod template to show up
   # in the job Console Output. This can be helpful for either security reasons
   # or simply to clean up the output to make it easier to read.
-  showRawYaml: true
+  showRawYaml: false
   # You can define the volumes that you want to mount for this container
   # Allowed types are: ConfigMap, EmptyDir, HostPath, Nfs, PVC, Secret
   # Configure the attributes as they appear in the corresponding Java class for that type
