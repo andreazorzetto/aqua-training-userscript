@@ -19,7 +19,7 @@ controller:
   # Used for label app.kubernetes.io/component
   componentName: "jenkins-controller"
   image: "jenkins/jenkins"
-  # tag: "2.332.2-jdk11"
+  # tag: "2.361.1-jdk11"
   tagLabel: jdk11
   imagePullPolicy: "Always"
   imagePullSecretName:
@@ -198,7 +198,7 @@ controller:
     - JNLP2-connect
   csrf:
     defaultCrumbIssuer:
-      enabled: true
+      enabled: false
       proxyCompatability: true
   # Kubernetes service type for the JNLP agent service
   # agentListenerServiceType is the Kubernetes Service type for the JNLP agent service,
@@ -226,8 +226,7 @@ controller:
   # loadBalancerIP: 1.2.3.4
   # Optionally configure a JMX port
   # requires additional javaOpts, ie
-  javaOpts: >
-    -Dpermissive-script-security.enabled=true
+  javaOpts: []
   #   -Dcom.sun.management.jmxremote.port=4000
   #   -Dcom.sun.management.jmxremote.authenticate=false
   #   -Dcom.sun.management.jmxremote.ssl=false
@@ -239,15 +238,14 @@ controller:
 
   # List of plugins to be install during Jenkins controller start
   installPlugins:
-    - kubernetes:1.31.3
-    - workflow-aggregator:2.6
-    - git:4.10.2
-    - configuration-as-code:1414.v878271fc496f
-    - job-dsl:1.78.3
-    - permissive-script-security:0.7
+    - kubernetes:3600.v144b_cd192ca_a_
+    - workflow-aggregator:581.v0c46fa_697ffd
+    - git:4.11.3
+    - configuration-as-code:1429.v09b_044a_c93de
+    - job-dsl:1.81
 
   # Set to false to download the minimum required version of all dependencies.
-  installLatestPlugins: false
+  installLatestPlugins: true
 
   # Set to true to download latest dependencies of any plugin that is requested to have the latest version.
   installLatestSpecifiedPlugins: false
@@ -265,6 +263,9 @@ controller:
 
   # Configures if plugins bundled with `controller.image` should be overwritten with the values of 'controller.installPlugins' on upgrade or redeployment.
   overwritePluginsFromImage: true
+
+  # Configures the restrictions for naming projects. Set this key to null or empty to skip it in the default config.
+  projectNamingStrategy: standard
 
   # Enable HTML parsing using OWASP Markup Formatter Plugin (antisamy-markup-formatter), useful with ghprb plugin.
   # The plugin is not installed by default, please update controller.installPlugins.
@@ -331,26 +332,53 @@ controller:
                 }
                 steps {
                   shell('''cat <<EOF > Dockerfile
-              FROM andreazorzetto/log4shell-vulnerable-app
-              
-              RUN echo "Do nothing the image is perfectly safe."
-              
-              EOF
-        
-              
-              docker build . -t tapimage:freestyle
-              
-              
-              docker images
-              
-              ## Implement the Aqua Scan step next''')
+                  FROM andreazorzetto/log4shell-vulnerable-app
+                  RUN echo "Do nothing the image is perfectly safe."
+                  EOF
+                  
+                  # Build image from Dockerfile
+                  docker build . -t tapimage:freestyle
+
+                  # List built images
+                  docker images
+                  
+                  ## Implement the Aqua Scan step next''')
+                }
+              }
+          - script: >
+              pipelineJob('docker-build-pipeline') {
+                definition {
+                  cps {
+                    sandbox()
+                    script("""node {
+                    stage('Build with Docker') {
+                      writeFile file: "Dockerfile", text: '''
+                        FROM ghcr.io/christophetd/log4shell-vulnerable-app
+                        RUN echo "Do nothing the image is perfectly safe."
+                        '''
+                  
+                        sh '''
+                        docker build . -t tapimage:pipeline
+                        docker images
+                        '''
+                    }
+                    stage('Scan image with Aqua') {
+                      echo "To be implemented"
+                    }
+                    }""".stripIndent())
+                  }
                 }
               }
     #  welcome-message: |
     #    jenkins:
     #      systemMessage: Welcome to our CI\CD server.  This Jenkins is configured and managed 'as code'.
-    # Ignored if securityRealm is defined in controller.JCasC.configScripts and
-    # ignored if controller.enableXmlConfig=true as controller.securityRealm takes precedence
+    # Allows adding to the top-level security JCasC section. For legacy,  default the chart includes apiToken configurations
+    security:
+      apiToken:
+        creationOfLegacyTokenEnabled: false
+        tokenGenerationOnCreationEnabled: false
+        usageStatisticsEnabled: true
+    # Ignored if securityRealm is defined in controller.JCasC.configScripts
     securityRealm: |-
       local:
         allowsSignup: false
@@ -620,8 +648,9 @@ agent:
   kubernetesReadTimeout: 15
   maxRequestsPerHostStr: "32"
   namespace:
-  # image: "jenkins/inbound-agent"
-  # tag: "4.11.2-4"
+#  image: "jenkins/inbound-agent"
+#  tag: "4.11.2-4"
+#  todo: rebuild agent
   image: "andreazorzetto/jenkins-inbound-agent"
   tag: "4.11-1-docker"
   workingDir: "/home/jenkins/agent"
@@ -888,6 +917,7 @@ backup:
   image:
     repository: "maorfr/kube-tasks"
     tag: "0.2.0"
+  imagePullSecretName:
   # Additional arguments for kube-tasks
   # Ref: https://github.com/maorfr/kube-tasks#simple-backup
   extraArgs: []
