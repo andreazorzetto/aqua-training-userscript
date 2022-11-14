@@ -248,7 +248,7 @@ controller:
   installLatestPlugins: true
 
   # Set to true to download latest dependencies of any plugin that is requested to have the latest version.
-  installLatestSpecifiedPlugins: false
+  installLatestSpecifiedPlugins: true
 
   # List of plugins to install in addition to those listed in controller.installPlugins
   additionalPlugins: []
