@@ -5,3 +5,4 @@ terraform.tfstate*
 .vagrant
 .terraform.lock.hcl
 *.iml
+.vscode/
