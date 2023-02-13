@@ -242,7 +242,7 @@ gitlab() {
     fi
 
     sed -i "s@EXTERNALURL@$gitlab_url@g" /tmp/gitlab.yaml
-    sed -i "s@PASSWORD@$password@g" /tmp/gitlab.yaml
+    sed -i "s@|PASSWORD|@$password@g" /tmp/gitlab.yaml
 
     echo "Applying /tmp/gitlab.yaml"
     kubectl apply -f /tmp/gitlab.yaml
@@ -262,7 +262,7 @@ deploy_jenkins
 deploy_cloudcmd
 download_deployment_resources
 
-if deploy_gitlab; 
+if $deploy_gitlab; 
 then
     gitlab
 fi
