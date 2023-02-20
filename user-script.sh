@@ -221,7 +221,7 @@ download_deployment_resources(){
     cd $user_home
     rm -Rf deployments
     git clone https://github.com/aquasecurity/deployments.git
-    chown $username: -R $deployment_resources_path
+    chown "$username":"$username" -R $deployment_resources_path
 }
 
 gitlab() {
@@ -235,15 +235,17 @@ gitlab() {
     echo "Remote deploy: $remote_resources"
     if [ $remote_resources == true ]; then
         wget https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/${bootstrap_branch}/gitlab.yaml -O /tmp/gitlab.yaml
+        wget https://raw.githubusercontent.com/aqua-ps/aqua-training-userscript/${bootstrap_branch}/gen-certs.sh -O /tmp/gen-certs.sh && chmod +x /tmp/gen-certs.sh
         TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600") && public_host=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/public-hostname)
         gitlab_url="https://$public_host:31043"
     else
-        cp $local_cloudcmd_path /tmp/gitlab.yaml
+        cp /vagrant_data/gitlab.yaml /tmp/gitlab.yaml
+        cp /vagrant_data/gen-certs.sh /tmp/gen-certs.sh  && chmod +x /tmp/gen-certs.sh
     fi
 
     sed -i "s@EXTERNALURL@$gitlab_url@g" /tmp/gitlab.yaml
     sed -i "s@|PASSWORD|@$password@g" /tmp/gitlab.yaml
-
+    
     echo "Applying /tmp/gitlab.yaml"
     kubectl apply -f /tmp/gitlab.yaml
     echo "Done."
@@ -258,11 +260,13 @@ setup_docker
 setup_k3s
 install_k8s_utilities
 setup_userenv
-deploy_jenkins
-deploy_cloudcmd
-download_deployment_resources
 
 if $deploy_gitlab; 
 then
     gitlab
+else
+    deploy_jenkins
 fi
+
+deploy_cloudcmd
+download_deployment_resources
